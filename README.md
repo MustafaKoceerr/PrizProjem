@@ -1,0 +1,2 @@
+# PrizProjem
+Bitirme projem1
