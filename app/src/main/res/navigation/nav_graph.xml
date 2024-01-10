@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/anaSayfaFragment">
+
+    <fragment
+        android:id="@+id/loginEkraniFragment"
+        android:name="com.mustafa.prizprojem.LoginEkraniFragment"
+        android:label="LoginEkraniFragment" >
+        <action
+            android:id="@+id/action_loginEkraniFragment_to_registerEkraniFragment"
+            app:destination="@id/registerEkraniFragment" />
+        <action
+            android:id="@+id/action_loginEkraniFragment_to_anaSayfaFragment"
+            app:destination="@id/anaSayfaFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerEkraniFragment"
+        android:name="com.mustafa.prizprojem.RegisterEkraniFragment"
+        android:label="RegisterEkraniFragment" >
+        <action
+            android:id="@+id/action_registerEkraniFragment_to_loginEkraniFragment"
+            app:destination="@id/loginEkraniFragment"
+            app:popUpToInclusive="false"/>
+    </fragment>
+    <fragment
+        android:id="@+id/anaSayfaFragment"
+        android:name="com.mustafa.prizprojem.AnaSayfaFragment"
+        android:label="fragment_ana_sayfa"
+        tools:layout="@layout/fragment_ana_sayfa">
+        <action
+            android:id="@+id/action_anaSayfaFragment_to_kuralEklemeFragment"
+            app:destination="@id/kuralEklemeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/kuralEklemeFragment"
+        android:name="com.mustafa.prizprojem.KuralEklemeFragment"
+        android:label="fragment_kural_ekleme"
+        tools:layout="@layout/fragment_kural_ekleme" >
+        <action
+            android:id="@+id/action_kuralEklemeFragment_to_anaSayfaFragment"
+            app:destination="@id/anaSayfaFragment" />
+        <argument
+            android:name="kural_id"
+            app:argType="integer" />
+    </fragment>
+</navigation>
