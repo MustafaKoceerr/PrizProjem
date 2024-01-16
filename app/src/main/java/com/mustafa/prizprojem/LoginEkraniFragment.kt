@@ -11,10 +11,11 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.datastore.core.DataStore
-import androidx.datastore.dataStoreFile
 import androidx.datastore.preferences.core.Preferences
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
-import com.mustafa.prizprojem.modelView.LoginModelView
 import com.mustafa.prizprojem.models.UserInfo
 import com.mustafa.prizprojem.models.UserResponse
 import com.mustafa.prizprojem.services.RetrofitObject
@@ -32,6 +33,7 @@ class LoginEkraniFragment : Fragment() {
     lateinit var dataStorePreferences: DataStore<Preferences>
     lateinit var sharedPref : SharedPreferences
 
+    private lateinit var myRegisterButton : Button
     private lateinit var usernameTextView: TextView
     private lateinit var passwordTextView: TextView
     private lateinit var myButton: Button
@@ -40,6 +42,7 @@ class LoginEkraniFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
+
 
     }
 
@@ -51,11 +54,14 @@ class LoginEkraniFragment : Fragment() {
         usernameTextView = view.findViewById(R.id.usernameText)
         passwordTextView = view.findViewById(R.id.passwordText)
         myButton = view.findViewById(R.id.loginButton)
+        myRegisterButton = view.findViewById(R.id.registerButton)
 
 
 
-
-
+        myRegisterButton.setOnClickListener {
+            val action = LoginEkraniFragmentDirections.actionLoginEkraniFragmentToRegisterEkraniFragment()
+            Navigation.findNavController(requireView()).navigate(action)
+        }
 
         myButton.setOnClickListener {
             val username = usernameTextView.text.toString()
@@ -64,24 +70,26 @@ class LoginEkraniFragment : Fragment() {
             if (username.isBlank() == false || password.isBlank()==false) {
                 // Kullanıcı adı ve şifre dolu, bu durumu işle
                 CoroutineScope(Dispatchers.Main).launch {
-                    loginPostFun2(username,password) // apimi cagirdim
-                    delay(200)
-                    val token = sharedPref.getString("token", "")
+                    loginPostFun(username,password) // apimi cagirdim
+                    delay(300)
 
-                    if (token!=null){
-                        val action = LoginEkraniFragmentDirections.actionLoginEkraniFragmentToAnaSayfaFragment()
-                        Navigation.findNavController(requireView()).navigate(action)
+                    val token : String? = veriyiCek()
+
+                    if (token != ""){
+                        // geri donulmeyecek şekilde geçiş yap
+                        Navigation.findNavController(requireView()).navigate(
+                            R.id.action_loginEkraniFragment_to_anaSayfaFragment,
+                            null,
+                            NavOptions.Builder().setPopUpTo(R.id.loginEkraniFragment, true).build()
+                            // Geri yığından fragment'ı kaldır
+                        )
                     }
                     else{
-                        println("benim token ${token}")
+                        //println("benim token ${token}")
                         Toast.makeText(requireContext(),"Lutfen kullanıcı adınızı veya şifrenizi kontrol ediniz!",Toast.LENGTH_SHORT).show()
                     }
 
-                    try {
-                        veriyiCek()
-                    }catch (e : Exception){
-                        println("veriyi cekerken cath'e yakalandin")
-                    }
+
                 }
             } else {
                 Toast.makeText(requireContext(), "Kullanıcı adı veya Şifre boş olamaz", Toast.LENGTH_SHORT).show()
@@ -93,44 +101,22 @@ class LoginEkraniFragment : Fragment() {
     }
 
 
-/*
-    fun loginPostFun(username: String, password: String){
-        var myUserInfo : UserInfo = UserInfo(username,password)
-        //         Call<UserResponse> call = retrofitLoginService.login(userInfo);
-        var call : Call<UserResponse> = myViewModel.apiService.postLogin(myUserInfo)
+    fun closeFragment() {
+        // FragmentManager'ı al
+        val fragmentManager: FragmentManager = requireActivity().supportFragmentManager
 
-        call.enqueue(object : retrofit2.Callback<UserResponse>{
+        // İlgili fragment'ı bul
+        val fragment: Fragment? = fragmentManager.findFragmentByTag("LoginEkraniFragment")
 
-            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
-
-                // cevap geldi demektir
-                println("nullsa cevap bos geldi  ${response.body()}")
-                if(response.body()!= null){
-                    val userResponse: UserResponse = response.body()!!
-                    // tokeni sql'e gömeceksin, ve aktiviteyi değiştireceksin
-                    println("tokenim geldi : ${userResponse.accessToken}\n bu da tokenimdi")
-                    val action = LoginEkraniFragmentDirections.actionLoginEkraniFragmentToAnaSayfaFragment()
-                    Navigation.findNavController(requireView()).navigate(action)
-                }
-                else{
-                    Toast.makeText(requireContext(), "Kullanici bilgileri hatali",Toast.LENGTH_SHORT).show()
-                }
-
-
-            }
-
-            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-
-                Toast.makeText(requireContext(), "Server'a ulasmadi vermiyor",Toast.LENGTH_SHORT).show()
-
-            }
-
-        })
+        // Eğer fragment bulunduysa, transaction başlat ve fragment'ı kaldır
+        fragment?.let {
+            val transaction: FragmentTransaction = fragmentManager.beginTransaction()
+            transaction.remove(it)
+            transaction.commit()
+        }
     }
 
- */
-
-    fun loginPostFun2(username: String, password:String){
+    fun loginPostFun(username: String, password:String){
         var myUserInfo : UserInfo = UserInfo(username,password)
         val call: Call<UserResponse> = myAPIService.apiService.postLogin(myUserInfo)
         //  myViewModel.apiService.postLogin(myUserInfo) bu kısımda zaten isteğimi gönderiyorum
@@ -139,20 +125,24 @@ class LoginEkraniFragment : Fragment() {
                 override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                     println("Cevap geldi")
                     //println("cavapt ${response.body()}")
-                    response.body()?.let {
-                        println("tokenim ${it.accessToken}")
-                        //myToken = it.accessToken
-                        //veriyiKaydet(it.accessToken)
-                        with(sharedPref.edit()) {
-                            // "token" adlı değişkeni string olarak kaydet
-                            putString("token", it.accessToken)
+                    if (response.isSuccessful) {
+                        // İşlem başarılı, belki bir başarı mesajını alabilirsiniz.
+                        println("Başarıyla girdi")
+                        //println(response.body())
 
-                            // Değişiklikleri kaydet
-                            apply()
-                        }
+                        response.body()?.let {
+                            println("tokenim ${it.accessToken}")
+                            //myToken = it.accessToken
+                            //veriyiKaydet(it.accessToken)
+                            veriyiKaydet(it.accessToken)
 
+                        } // end of the let
+                    } // end of the if
+                    else {
+                        println("islemBasarisiz")
+                        // İşlem başarısız, hata mesajını alabilirsiniz.
+                        veriyiKaydet("")
                     }
-                    // burada gelen cevabı sql'e gömücem ve fragment değiştiricem 
                 }
 
                 override fun onFailure(call: Call<UserResponse>, t: Throwable) {
@@ -166,19 +156,17 @@ class LoginEkraniFragment : Fragment() {
         }
     }
 
-fun veriyiKaydet(token : String){
-
-
-    if (token == ""){
-        Toast.makeText(requireContext(),"Kullanıcı tokeniniz kaydedilemedi!", Toast.LENGTH_SHORT).show()
-    }
-    else{
-        //sharedPreferences.edit().putString("token", token).apply()
+fun veriyiKaydet(myStr : String){
+    with(sharedPref.edit()) {
+        // "token" adlı değişkeni string olarak kaydet
+        putString("token", myStr)
+        // Değişiklikleri kaydet
+        apply()
     }
 }
 
-    fun veriyiCek(){
-
+    fun veriyiCek(): String?{
+        return sharedPref.getString("token", "")
     }
 
 }

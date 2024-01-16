@@ -38,7 +38,7 @@ class AnaSayfaFragment : Fragment() {
     private val myAPIService = RetrofitObject
     private lateinit var bosButton: Button
     private lateinit var popUpWindow : PopupWindow
-
+    private lateinit var myYardimTextView : TextView
 
     private var kurallarListem : ArrayList<Map<String,Any>> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +54,8 @@ class AnaSayfaFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ana_sayfa, container, false)
+        myYardimTextView = view.findViewById(R.id.yardimTextView)
+        myYardimTextView.visibility = View.GONE
 
         myToolbar = view.findViewById(R.id.toolbar)
         myRecyclerView = view.findViewById(R.id.recyclerView)
@@ -70,8 +72,8 @@ class AnaSayfaFragment : Fragment() {
             val token = sharedPref.getString("token", "")
             println("benim anasayfa tokenim: ${token}")
 
-
         }
+
         var myTempArray : ArrayList<Map<String,Any>>
         CoroutineScope(Dispatchers.Main).launch {
             val layoutManager = LinearLayoutManager(requireContext())
@@ -79,6 +81,7 @@ class AnaSayfaFragment : Fragment() {
             getRulesArray() // apimi cagirdim
             delay(800)
             myTempArray = kurallarListem.clone() as ArrayList<Map<String, Any>>
+            yardimGoster(myTempArray)
             val adapter = RecyclerAdapter(myTempArray,sharedPref)
             myRecyclerView.adapter = adapter
             delay(100)
@@ -100,6 +103,18 @@ class AnaSayfaFragment : Fragment() {
 
 
         return view
+    }
+
+    private fun yardimGoster(tanimliKurallar :ArrayList<Map<String, Any>>) {
+        if (tanimliKurallar.isEmpty()){
+            myYardimTextView.visibility = View.VISIBLE
+            myRecyclerView.visibility = View.GONE
+        }
+        else{
+            myYardimTextView.visibility = View.GONE
+            myRecyclerView.visibility = View.VISIBLE
+        }
+
     }
 
 
@@ -137,6 +152,8 @@ class AnaSayfaFragment : Fragment() {
                 println("yardim menu öğesine tıklandı")
                 showPopupWindow()
                 myRecyclerView.visibility = View.INVISIBLE
+                myYardimTextView.visibility = View.INVISIBLE
+
                 // Diğer menü öğelerini burada kontrol edebilirsiniz
             }
 
@@ -151,9 +168,10 @@ class AnaSayfaFragment : Fragment() {
 
         //var myToken = "BEARER eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjgsInVzZXJuYW1lIjoiYWhtZXQiLCJjaXR5IjoiIiwicHJvdmluY2UiOiIiLCJpYXQiOjE3MDUyMzM3OTgsImV4cCI6MTcwNTQwNjU5OH0.aAay2IjaDkcdTJN28soB_mKqIYsMufsvgOU9lh2fff0"
         token?.let {tokenn->
-            var call : Call<List<Map<String,Any>>> = myAPIService.apiService.getRuleArray("BEARER ${tokenn}")
 
             try {
+                var call : Call<List<Map<String,Any>>> = myAPIService.apiService.getRuleArray("BEARER ${tokenn}")
+
                 call.enqueue(object : Callback<List<Map<String,Any>>>{
                     override fun onResponse(
                         call: Call<List<Map<String, Any>>>,
@@ -206,6 +224,7 @@ class AnaSayfaFragment : Fragment() {
         popupWindow.setOnDismissListener {
             // PopupWindow kapatıldığında RecyclerView'ı tekrar görünür yap
             myRecyclerView.visibility = View.VISIBLE
+            myYardimTextView.visibility = View.VISIBLE
         }
 
 

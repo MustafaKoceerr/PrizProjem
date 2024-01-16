@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/anaSayfaFragment">
+    app:startDestination="@id/loginEkraniFragment">
 
     <fragment
         android:id="@+id/loginEkraniFragment"
@@ -41,11 +41,11 @@
         android:name="com.mustafa.prizprojem.KuralEklemeFragment"
         android:label="fragment_kural_ekleme"
         tools:layout="@layout/fragment_kural_ekleme" >
-        <argument
-            android:name="kural_id"
-            app:argType="integer" />
         <action
             android:id="@+id/action_kuralEklemeFragment_to_anaSayfaFragment"
             app:destination="@id/anaSayfaFragment" />
+        <argument
+            android:name="kural_id"
+            app:argType="integer" />
     </fragment>
 </navigation>

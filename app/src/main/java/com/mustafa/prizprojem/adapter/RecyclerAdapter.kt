@@ -5,9 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.mustafa.prizprojem.AnaSayfaFragmentDirections
 import com.mustafa.prizprojem.R
 import com.mustafa.prizprojem.models.DeleteInfo
@@ -48,7 +50,7 @@ class RecyclerAdapter(val kurallarListesi: ArrayList<Map<String, Any>>,
     private lateinit var birinciText: TextView
     private lateinit var ikinciText: TextView
     private lateinit var kuralTipiText: TextView
-    private lateinit var silButton: Button
+    private lateinit var silButton: MaterialButton
 
 
     override fun onBindViewHolder(holder: KurallarViewHolder, position: Int) {
@@ -62,11 +64,11 @@ class RecyclerAdapter(val kurallarListesi: ArrayList<Map<String, Any>>,
         kuralTipiText.text = "Kural Tipi : ${myMap["rule"].toString().toFloat().toInt()}"
 
         if (myMap["rule"].toString().equals("1.0")) {
-            birinciText.text = "Min sıcaklık: ${myMap["value"]}"
+            birinciText.text = "Sıcaklık ${myMap["value"]} derecenin altına düşerse priz aktifleşir."
             ikinciText.visibility = View.GONE
 
         } else if (myMap["rule"].toString().equals("2.0")) {
-            birinciText.text = "Max sıcaklık: ${myMap["value"]}"
+            birinciText.text = "Sıcaklık ${myMap["value"]} derecenin üstüne çıkarsa priz aktifleşir."
             ikinciText.visibility = View.GONE
 
         } else if (myMap["rule"].toString().equals("3.0")) {
@@ -79,8 +81,8 @@ class RecyclerAdapter(val kurallarListesi: ArrayList<Map<String, Any>>,
             val eDateDegeri = json.getString("e_date")
 
             //println("mymap : ${myMap["id"]}")
-            birinciText.text = "Baslangic: ${sDateDegeri}"
-            ikinciText.text = "Bitis: ${eDateDegeri}"
+            birinciText.text = "Prizin aktif olacağı saatin başlangıcı: ${sDateDegeri}"
+            ikinciText.text = "Prizin aktif olacağı saatin bitişi: ${eDateDegeri}"
         }
 
         val tx1 = kuralTipiText.text.toString()
@@ -89,14 +91,7 @@ class RecyclerAdapter(val kurallarListesi: ArrayList<Map<String, Any>>,
 
         // FRAGMENT'TA KURALLARI ÇEKİP BURAYA ARRAY LİST İLE AT VE KURALA GÖRE GÖSTERİLECEK ŞEYLERİ AÇ
 
-        holder.itemView.setOnClickListener {
-            val action = AnaSayfaFragmentDirections.actionAnaSayfaFragmentToKuralGosterFragment(
-                kuralTip = tx1,
-                kuralText1 = tx2,
-                kuralText2 = tx3
-            )
-            Navigation.findNavController(it).navigate(action)
-        }
+
 
         silButton.setOnClickListener {
             println("kural'ımın id'si ${myMap["id"].toString().toFloat().toInt()}")
@@ -105,7 +100,6 @@ class RecyclerAdapter(val kurallarListesi: ArrayList<Map<String, Any>>,
 
             val adapterPosition = holder.adapterPosition
             if (adapterPosition != RecyclerView.NO_POSITION) {
-
                    kurallarListesi.removeAt(adapterPosition)
                    notifyItemRemoved(adapterPosition)
                    println("Pozisyon $adapterPosition")
@@ -114,7 +108,8 @@ class RecyclerAdapter(val kurallarListesi: ArrayList<Map<String, Any>>,
 
                 // belki bir popup verilebilir
                 true
-            } else {
+            } // end of the if
+            else {
                 false
             }
         }

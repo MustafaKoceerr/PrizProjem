@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="150dp">
+    android:layout_height="175dp">
 
     <TextView
         android:id="@+id/kuralText"
@@ -36,14 +36,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dereceVeyaText" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/silButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:text="Sil"
+        android:background="@android:color/transparent"
+        android:text="Kuralı Sil:"
+        android:textColor="@color/black"
+        app:icon="@drawable/delete_icon"
+        app:iconGravity="end"
+        app:iconTint="#FF0000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/saatText"
+        app:layout_constraintVertical_bias="1.0"
+        android:layout_marginBottom="10dp"/>
+
+    <View
+        android:id="@+id/cizgi"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@+id/silButton"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

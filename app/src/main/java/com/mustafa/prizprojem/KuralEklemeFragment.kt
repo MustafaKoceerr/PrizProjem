@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
 import com.mustafa.prizprojem.models.RuleInfoFloat
 import com.mustafa.prizprojem.models.RuleInfoJson
@@ -76,8 +77,9 @@ class KuralEklemeFragment : Fragment() {
                            kuralEkleFloat(temp,myStr.toFloat()) // apimi cagirdim
                            delay(100)
                            Toast.makeText(requireContext(),"Kuraliniz basariyla kaydedildi",Toast.LENGTH_SHORT).show()
-                           val action = KuralEklemeFragmentDirections.actionKuralEklemeFragmentToAnaSayfaFragment()
-                           Navigation.findNavController(requireView()).navigate(action)
+
+                           anaSayfayaGecis()
+
                        }
 
                    }
@@ -96,8 +98,9 @@ class KuralEklemeFragment : Fragment() {
                                 kuralEkleFloat(temp,myStr.toFloat()) // apimi cagirdim
                                 delay(100)
                                 Toast.makeText(requireContext(),"Kuraliniz basariyla kaydedildi",Toast.LENGTH_SHORT).show()
-                                val action = KuralEklemeFragmentDirections.actionKuralEklemeFragmentToAnaSayfaFragment()
-                                Navigation.findNavController(requireView()).navigate(action)
+
+                                anaSayfayaGecis()
+
                             }
                             // kuralim dogrulandi, action islemini yapabilirim
 
@@ -128,9 +131,9 @@ class KuralEklemeFragment : Fragment() {
                         val mapWithValues = mapOf(key1 to value1, key2 to value2)
                         CoroutineScope(Dispatchers.Main).launch {
                             kuralEkleJson(temp, mapWithValues)// apimi cagirdim
-                            delay(100)
-                            val action = KuralEklemeFragmentDirections.actionKuralEklemeFragmentToAnaSayfaFragment()
-                            Navigation.findNavController(requireView()).navigate(action)
+                            delay(150)
+                            // geri donulmeyecek şekilde geçiş yap
+                            anaSayfayaGecis()
                         }
                         println("bos biraktigin yok ")
                     }
@@ -239,28 +242,30 @@ class KuralEklemeFragment : Fragment() {
                         call: Call<RuleResponseFloat>,
                         response: Response<RuleResponseFloat>
                     ) {
-                        println("CEvap geldii")
-                        println("response bodyi ${response.body()==null} ")
-                        response.body()?.let {
+                        println("kuralEkleFloat cevap geldii")
+                        if (response.isSuccessful) {
+                            println("response bodyi ${response.body() == null} ")
+                            response.body()?.let {
+                                /*
+                                 println("cevabim ${it.msg}")
+                                 println("cevabim ${it.rule}")
+                                 println("cevabim ${it.value}")
+                                 */
+                                gonderInt = it.rule
+                                gonderFloat = it.value
+                            } // end of the let
+                        }  // end of the if
 
-                            /*
-                             println("cevabim ${it.msg}")
-                             println("cevabim ${it.rule}")
-                             println("cevabim ${it.value}")
-                             */
-                            gonderInt = it.rule
-                            gonderFloat = it.value
-                        }
 
                     }
 
                     override fun onFailure(call: Call<RuleResponseFloat>, t: Throwable) {
-                        println("Cevap gelmedi")
+                        println("kuralEkleFloat cevap gelmedi")
                     }
 
                 })
             }catch (e:Exception){
-                println("TRY CATCH'E YAKALANDIN KOCUM")
+                println("kuralEkleFloat fonskiyonunda catch'e yakalandın")
             }
         }
 
@@ -275,40 +280,52 @@ class KuralEklemeFragment : Fragment() {
         //var myToken = "BEARER eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjgsInVzZXJuYW1lIjoiYWhtZXQiLCJjaXR5IjoiIiwicHJvdmluY2UiOiIiLCJpYXQiOjE3MDUyMzM3OTgsImV4cCI6MTcwNTQwNjU5OH0.aAay2IjaDkcdTJN28soB_mKqIYsMufsvgOU9lh2fff0"
 
         token?.let {tokenn->
-            val call : Call<RuleResponseJson> = myAPIService.apiService.postRuleJson("BEARER ${tokenn}",myKural)
             try {
+                val call : Call<RuleResponseJson> = myAPIService.apiService.postRuleJson("BEARER ${tokenn}",myKural)
+
                 call.enqueue(object : Callback<RuleResponseJson>{
                     override fun onResponse(
                         call: Call<RuleResponseJson>,
                         response: Response<RuleResponseJson>
                     ) {
                         println("Cevap geldi")
-                        println("Response: ${response.body() == null}")
-                        response.body()?.let {
+                        if (response.isSuccessful) {
+                            println("Response: ${response.body() == null}")
+                            response.body()?.let {
 
-                            println("Cevabim: ${it.msg}")
-                            println("Cevabim: ${it.rule}")
-                            println("Cevabim: ${it.value}")
+                                println("Cevabim: ${it.msg}")
+                                println("Cevabim: ${it.rule}")
+                                println("Cevabim: ${it.value}")
 
-                            gonderInt = it.rule
-                            gonderMap = it.value
-                        }
+                                gonderInt = it.rule
+                                gonderMap = it.value
+                            } // end of the let
+                        } // end of the if
+
+
                     }
 
                     override fun onFailure(call: Call<RuleResponseJson>, t: Throwable) {
-                        println("Cevap gelmedi")
+                        println("kuralEkleJson cevap gelmedi")
                     }
 
                 })
             }catch (e: Exception){
-                println("Cath'e yakalandın KOCUM")
+                println("kuralEkleJson fonskiyonunda catch'e yakalandın")
             }
         }
 
     }
 
 
-
+fun anaSayfayaGecis(){
+    Navigation.findNavController(requireView()).navigate(
+        R.id.action_kuralEklemeFragment_to_anaSayfaFragment,
+        null,
+        NavOptions.Builder().setPopUpTo(R.id.kuralEklemeFragment, true).build()
+        // Geri yığından fragment'ı kaldır
+    )
+}
 
 
 
