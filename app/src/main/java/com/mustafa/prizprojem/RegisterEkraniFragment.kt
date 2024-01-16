@@ -111,8 +111,8 @@ class RegisterEkraniFragment : Fragment() {
         myButton.setOnClickListener {
             //println("register butona tiklandi")
 
-            var tx1 = textUsername.text.toString()
-            var tx2 = textPassword.text.toString()
+            var tx1 = textUsername.text.toString().trim()
+            var tx2 = textPassword.text.toString().trim()
             var tx3 = textCity.text.toString()
             var tx4 = textProvince.text.toString()
             //println("${tx1} ${tx2}  ${tx3}  ${tx4} ")

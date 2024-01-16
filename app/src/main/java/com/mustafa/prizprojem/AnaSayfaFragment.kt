@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Gravity
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -14,8 +13,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.PopupWindow
 import android.widget.TextView
-import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
+import androidx.navigation.NavOptions
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -39,7 +40,6 @@ class AnaSayfaFragment : Fragment() {
     private lateinit var bosButton: Button
     private lateinit var popUpWindow : PopupWindow
     private lateinit var myYardimTextView : TextView
-
     private var kurallarListem : ArrayList<Map<String,Any>> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,12 +54,16 @@ class AnaSayfaFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ana_sayfa, container, false)
-        myYardimTextView = view.findViewById(R.id.yardimTextView)
-        myYardimTextView.visibility = View.GONE
-
         myToolbar = view.findViewById(R.id.toolbar)
         myRecyclerView = view.findViewById(R.id.recyclerView)
+        myYardimTextView = view.findViewById(R.id.yardimTextView)
+        myYardimTextView.text = "Henüz hiç kural eklemedin.\nNasıl ekleneceğini öğrenmek için sağ üstte bulunan soru işareti simgesine basabilirsin."
+        myYardimTextView.visibility = View.GONE
+        myRecyclerView.visibility = View.INVISIBLE
+
+
         popUpWindow = PopupWindow(requireContext())
+
         val myView = layoutInflater.inflate(R.layout.popup_window,null)
         popUpWindow.contentView = myView
 
@@ -82,6 +86,7 @@ class AnaSayfaFragment : Fragment() {
             delay(800)
             myTempArray = kurallarListem.clone() as ArrayList<Map<String, Any>>
             yardimGoster(myTempArray)
+
             val adapter = RecyclerAdapter(myTempArray,sharedPref)
             myRecyclerView.adapter = adapter
             delay(100)
@@ -156,6 +161,21 @@ class AnaSayfaFragment : Fragment() {
 
                 // Diğer menü öğelerini burada kontrol edebilirsiniz
             }
+            R.id.cikisYap ->{
+                with(sharedPref.edit()) {
+                    // "token" adlı değişkeni string olarak kaydet
+                    putString("token", "")
+                    // Değişiklikleri kaydet
+                    apply()
+                }
+
+                Navigation.findNavController(requireView()).navigate(
+                    R.id.action_anaSayfaFragment_to_loginEkraniFragment,
+                    null,
+                    NavOptions.Builder().setPopUpTo(R.id.anaSayfaFragment, true).build()
+                    // Geri yığından fragment'ı kaldır
+                )
+            }
 
                 else -> return super.onOptionsItemSelected(item)
         }
@@ -224,7 +244,7 @@ class AnaSayfaFragment : Fragment() {
         popupWindow.setOnDismissListener {
             // PopupWindow kapatıldığında RecyclerView'ı tekrar görünür yap
             myRecyclerView.visibility = View.VISIBLE
-            myYardimTextView.visibility = View.VISIBLE
+            myYardimTextView.visibility = View.GONE
         }
 
 

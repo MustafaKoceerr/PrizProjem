@@ -1,19 +1,15 @@
 package com.mustafa.prizprojem.services
 
-import com.google.gson.annotations.SerializedName
 import com.mustafa.prizprojem.models.DeleteInfo
-import com.mustafa.prizprojem.models.DeleteResponse
 import com.mustafa.prizprojem.models.RuleInfoFloat
 import com.mustafa.prizprojem.models.RuleInfoJson
 import com.mustafa.prizprojem.models.RuleResponseFloat
 import com.mustafa.prizprojem.models.RuleResponseJson
-import com.mustafa.prizprojem.models.UserRegisterInfo
 import com.mustafa.prizprojem.models.UserInfo
+import com.mustafa.prizprojem.models.UserRegisterInfo
 import com.mustafa.prizprojem.models.UserRegisterResponse
 import com.mustafa.prizprojem.models.UserResponse
-import org.json.JSONObject
 import retrofit2.http.Body
-import retrofit2.http.Field
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST

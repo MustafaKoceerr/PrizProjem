@@ -35,6 +35,9 @@
         <action
             android:id="@+id/action_anaSayfaFragment_to_kuralEklemeFragment"
             app:destination="@id/kuralEklemeFragment" />
+        <action
+            android:id="@+id/action_anaSayfaFragment_to_loginEkraniFragment"
+            app:destination="@id/loginEkraniFragment" />
     </fragment>
     <fragment
         android:id="@+id/kuralEklemeFragment"

@@ -2,15 +2,20 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="1 Numaralı Kuraldan ekle"
+    <item android:title="1 Numaralı Kuraldan Ekle"
         android:id="@+id/kural1"/>
-    <item android:title="2 Numaralı Kuraldan ekle"
+    <item android:title="2 Numaralı Kuraldan Ekle"
         android:id="@+id/kural2"/>
-    <item android:title="3 Numaralı Kuraldan ekle"
+    <item android:title="3 Numaralı Kuraldan Ekle"
         android:id="@+id/kural3"/>
     <item android:title="Yardim"
         android:id="@+id/yardimMenu"
         app:showAsAction="always"
         android:icon="@drawable/help_icon"
+        />
+    <item android:title="Cıkış Yap"
+        android:id="@+id/cikisYap"
+        android:icon="@drawable/cikis_yap_icon"
+        app:showAsAction="never"
         />
 </menu>
