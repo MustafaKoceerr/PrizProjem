@@ -1,6 +1,8 @@
 package com.mustafa.prizprojem
 
 import android.app.TimePickerDialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,18 +13,38 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.navigation.Navigation
+import com.mustafa.prizprojem.models.RuleInfoFloat
+import com.mustafa.prizprojem.models.RuleInfoJson
+import com.mustafa.prizprojem.models.RuleResponseFloat
+import com.mustafa.prizprojem.models.RuleResponseJson
+import com.mustafa.prizprojem.services.RetrofitObject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.lang.Exception
 import java.util.Calendar
 
 
 class KuralEklemeFragment : Fragment() {
+    lateinit var sharedPref : SharedPreferences
+
     private lateinit var kural1: EditText
     private lateinit var kural2: EditText
     private lateinit var kuralBaslangic: TextView
     private lateinit var kuralBitis: TextView
     private lateinit var myButton: Button
+    private val myAPIService = RetrofitObject
+    private var gonderInt = -1000
+    private var gonderFloat :Float = -1000F
+    private lateinit var gonderMap :Map<String,String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
 
     }
 
@@ -39,6 +61,7 @@ class KuralEklemeFragment : Fragment() {
         myButton = view.findViewById(R.id.kaydetButon)
 
 
+
         var temp = kuralEkraniOlustur()
 
         myButton.setOnClickListener {
@@ -49,8 +72,13 @@ class KuralEklemeFragment : Fragment() {
                     //işlem yap
                     var myStr = kural1.text.toString()
                    if(kuralKontrol(myStr)){
-                       // todo: burada action'a gitmeyi yap
-                       Toast.makeText(requireContext(),"Kuraliniz basariyla kaydedildi",Toast.LENGTH_SHORT).show()
+                       CoroutineScope(Dispatchers.Main).launch {
+                           kuralEkleFloat(temp,myStr.toFloat()) // apimi cagirdim
+                           delay(100)
+                           Toast.makeText(requireContext(),"Kuraliniz basariyla kaydedildi",Toast.LENGTH_SHORT).show()
+                           val action = KuralEklemeFragmentDirections.actionKuralEklemeFragmentToAnaSayfaFragment()
+                           Navigation.findNavController(requireView()).navigate(action)
+                       }
 
                    }
                 }
@@ -64,9 +92,14 @@ class KuralEklemeFragment : Fragment() {
                         //işlem yap
                         var myStr = kural2.text.toString()
                         if(kuralKontrol(myStr)){
+                            CoroutineScope(Dispatchers.Main).launch {
+                                kuralEkleFloat(temp,myStr.toFloat()) // apimi cagirdim
+                                delay(100)
+                                Toast.makeText(requireContext(),"Kuraliniz basariyla kaydedildi",Toast.LENGTH_SHORT).show()
+                                val action = KuralEklemeFragmentDirections.actionKuralEklemeFragmentToAnaSayfaFragment()
+                                Navigation.findNavController(requireView()).navigate(action)
+                            }
                             // kuralim dogrulandi, action islemini yapabilirim
-                            // todo: burada action'a gitmeyi yap
-                            Toast.makeText(requireContext(),"Kuraliniz basariyla kaydedildi",Toast.LENGTH_SHORT).show()
 
                         }
                     }
@@ -86,7 +119,19 @@ class KuralEklemeFragment : Fragment() {
 
                     } else {
                         // kaydetme islemini yapacaksin
-                        // TODO:
+                        val key1 = "s_date"
+                        val value1 = kuralBaslangic.text.toString()
+
+                        val key2 = "e_date"
+                        val value2 = kuralBitis.text.toString()
+
+                        val mapWithValues = mapOf(key1 to value1, key2 to value2)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            kuralEkleJson(temp, mapWithValues)// apimi cagirdim
+                            delay(100)
+                            val action = KuralEklemeFragmentDirections.actionKuralEklemeFragmentToAnaSayfaFragment()
+                            Navigation.findNavController(requireView()).navigate(action)
+                        }
                         println("bos biraktigin yok ")
                     }
                 }// 3 NUMARA BİTİS
@@ -117,6 +162,8 @@ class KuralEklemeFragment : Fragment() {
             requireContext(),
             TimePickerDialog.OnTimeSetListener { view, selectedHour, selectedMinute ->
                 selectedTime = "$selectedHour:$selectedMinute"
+                selectedTime = String.format("%02d:%02d", selectedHour, selectedMinute)
+
                 //println("sectiğim saat ${selectedTime}")
                 //println("type : ${selectedTime::class}")
                 when (myInt) {
@@ -177,4 +224,99 @@ class KuralEklemeFragment : Fragment() {
                 }
         return true
     }
-}
+
+
+    fun kuralEkleFloat(rule : Int, value: Float){
+        val token =  sharedPref.getString("token", "")
+
+        var myKural : RuleInfoFloat = RuleInfoFloat(rule, value)
+        //var myToken = "BEARER eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjgsInVzZXJuYW1lIjoiYWhtZXQiLCJjaXR5IjoiIiwicHJvdmluY2UiOiIiLCJpYXQiOjE3MDUyMzM3OTgsImV4cCI6MTcwNTQwNjU5OH0.aAay2IjaDkcdTJN28soB_mKqIYsMufsvgOU9lh2fff0"
+        token?.let {tokenn->
+            val call: Call<RuleResponseFloat> = myAPIService.apiService.postRuleFloat("BEARER ${tokenn}",myKural)
+            try {
+                call.enqueue(object : Callback<RuleResponseFloat>{
+                    override fun onResponse(
+                        call: Call<RuleResponseFloat>,
+                        response: Response<RuleResponseFloat>
+                    ) {
+                        println("CEvap geldii")
+                        println("response bodyi ${response.body()==null} ")
+                        response.body()?.let {
+
+                            /*
+                             println("cevabim ${it.msg}")
+                             println("cevabim ${it.rule}")
+                             println("cevabim ${it.value}")
+                             */
+                            gonderInt = it.rule
+                            gonderFloat = it.value
+                        }
+
+                    }
+
+                    override fun onFailure(call: Call<RuleResponseFloat>, t: Throwable) {
+                        println("Cevap gelmedi")
+                    }
+
+                })
+            }catch (e:Exception){
+                println("TRY CATCH'E YAKALANDIN KOCUM")
+            }
+        }
+
+    }
+
+
+    fun kuralEkleJson(rule: Int, myMap: Map<String,String>){
+        var myKural: RuleInfoJson = RuleInfoJson(rule,myMap)
+        val token =  sharedPref.getString("token", "")
+
+
+        //var myToken = "BEARER eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjgsInVzZXJuYW1lIjoiYWhtZXQiLCJjaXR5IjoiIiwicHJvdmluY2UiOiIiLCJpYXQiOjE3MDUyMzM3OTgsImV4cCI6MTcwNTQwNjU5OH0.aAay2IjaDkcdTJN28soB_mKqIYsMufsvgOU9lh2fff0"
+
+        token?.let {tokenn->
+            val call : Call<RuleResponseJson> = myAPIService.apiService.postRuleJson("BEARER ${tokenn}",myKural)
+            try {
+                call.enqueue(object : Callback<RuleResponseJson>{
+                    override fun onResponse(
+                        call: Call<RuleResponseJson>,
+                        response: Response<RuleResponseJson>
+                    ) {
+                        println("Cevap geldi")
+                        println("Response: ${response.body() == null}")
+                        response.body()?.let {
+
+                            println("Cevabim: ${it.msg}")
+                            println("Cevabim: ${it.rule}")
+                            println("Cevabim: ${it.value}")
+
+                            gonderInt = it.rule
+                            gonderMap = it.value
+                        }
+                    }
+
+                    override fun onFailure(call: Call<RuleResponseJson>, t: Throwable) {
+                        println("Cevap gelmedi")
+                    }
+
+                })
+            }catch (e: Exception){
+                println("Cath'e yakalandın KOCUM")
+            }
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+}// fragment sonu
+
+
+

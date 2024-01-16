@@ -14,7 +14,9 @@
             app:destination="@id/registerEkraniFragment" />
         <action
             android:id="@+id/action_loginEkraniFragment_to_anaSayfaFragment"
-            app:destination="@id/anaSayfaFragment" />
+            app:destination="@id/anaSayfaFragment" >
+
+        </action>
     </fragment>
     <fragment
         android:id="@+id/registerEkraniFragment"
@@ -39,11 +41,11 @@
         android:name="com.mustafa.prizprojem.KuralEklemeFragment"
         android:label="fragment_kural_ekleme"
         tools:layout="@layout/fragment_kural_ekleme" >
-        <action
-            android:id="@+id/action_kuralEklemeFragment_to_anaSayfaFragment"
-            app:destination="@id/anaSayfaFragment" />
         <argument
             android:name="kural_id"
             app:argType="integer" />
+        <action
+            android:id="@+id/action_kuralEklemeFragment_to_anaSayfaFragment"
+            app:destination="@id/anaSayfaFragment" />
     </fragment>
 </navigation>

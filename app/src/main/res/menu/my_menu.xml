@@ -8,5 +8,9 @@
         android:id="@+id/kural2"/>
     <item android:title="3 Numaralı Kuraldan ekle"
         android:id="@+id/kural3"/>
-
+    <item android:title="Yardim"
+        android:id="@+id/yardimMenu"
+        app:showAsAction="always"
+        android:icon="@drawable/help_icon"
+        />
 </menu>

@@ -1,5 +1,7 @@
 package com.mustafa.prizprojem
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,6 +10,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStoreFile
+import androidx.datastore.preferences.core.Preferences
 import androidx.navigation.Navigation
 import com.mustafa.prizprojem.modelView.LoginModelView
 import com.mustafa.prizprojem.models.UserInfo
@@ -20,19 +25,21 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.lang.Exception
+import kotlin.Exception
 
 
 class LoginEkraniFragment : Fragment() {
+    lateinit var dataStorePreferences: DataStore<Preferences>
+    lateinit var sharedPref : SharedPreferences
 
     private lateinit var usernameTextView: TextView
     private lateinit var passwordTextView: TextView
     private lateinit var myButton: Button
    // private val myViewModel = LoginModelView() // tanımlanmış
    private val myAPIService = RetrofitObject
-    private var myToken : String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
 
     }
 
@@ -41,10 +48,13 @@ class LoginEkraniFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_login_ekrani, container, false)
-        // Inflate the layout for this fragment
         usernameTextView = view.findViewById(R.id.usernameText)
         passwordTextView = view.findViewById(R.id.passwordText)
         myButton = view.findViewById(R.id.loginButton)
+
+
+
+
 
 
         myButton.setOnClickListener {
@@ -55,17 +65,23 @@ class LoginEkraniFragment : Fragment() {
                 // Kullanıcı adı ve şifre dolu, bu durumu işle
                 CoroutineScope(Dispatchers.Main).launch {
                     loginPostFun2(username,password) // apimi cagirdim
-                    delay(100)
-                    if (myToken!=null){
+                    delay(200)
+                    val token = sharedPref.getString("token", "")
+
+                    if (token!=null){
                         val action = LoginEkraniFragmentDirections.actionLoginEkraniFragmentToAnaSayfaFragment()
                         Navigation.findNavController(requireView()).navigate(action)
                     }
                     else{
-                       println("benim token ${myToken}")
+                        println("benim token ${token}")
                         Toast.makeText(requireContext(),"Lutfen kullanıcı adınızı veya şifrenizi kontrol ediniz!",Toast.LENGTH_SHORT).show()
                     }
 
-
+                    try {
+                        veriyiCek()
+                    }catch (e : Exception){
+                        println("veriyi cekerken cath'e yakalandin")
+                    }
                 }
             } else {
                 Toast.makeText(requireContext(), "Kullanıcı adı veya Şifre boş olamaz", Toast.LENGTH_SHORT).show()
@@ -125,11 +141,18 @@ class LoginEkraniFragment : Fragment() {
                     //println("cavapt ${response.body()}")
                     response.body()?.let {
                         println("tokenim ${it.accessToken}")
-                        myToken = it.accessToken
+                        //myToken = it.accessToken
+                        //veriyiKaydet(it.accessToken)
+                        with(sharedPref.edit()) {
+                            // "token" adlı değişkeni string olarak kaydet
+                            putString("token", it.accessToken)
+
+                            // Değişiklikleri kaydet
+                            apply()
+                        }
 
                     }
                     // burada gelen cevabı sql'e gömücem ve fragment değiştiricem 
-                    // TODO: sa
                 }
 
                 override fun onFailure(call: Call<UserResponse>, t: Throwable) {
@@ -143,4 +166,20 @@ class LoginEkraniFragment : Fragment() {
         }
     }
 
+fun veriyiKaydet(token : String){
+
+
+    if (token == ""){
+        Toast.makeText(requireContext(),"Kullanıcı tokeniniz kaydedilemedi!", Toast.LENGTH_SHORT).show()
+    }
+    else{
+        //sharedPreferences.edit().putString("token", token).apply()
+    }
 }
+
+    fun veriyiCek(){
+
+    }
+
+}
+
